@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>todomvc of JavaScript</title>
+    <script src="./vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{ title }}</h1>
+      <input id="completedAll" type="checkbox" />
+      <input id="keyword" autofocus />
+      <div id="todos"></div>
+      <div id="bottomBar">
+        <sapn id="count">0 items left</sapn>
+        <sapn>
+          <label><input value="all" name="state" type="radio" />All</label>
+          <label><input value="active" name="state" type="radio" />Active</label>
+          <label><input value="completed" name="state" type="radio" />Completed</label>
+        </sapn>
+        <a href="javascript:;">Clear completed</a>
+      </div>
+    </div>
+  </body>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data () {
+        return {
+          title: 'todos of Vue'
+        }
+      },
+      computed: {},
+      mounted () {},
+      methods: {}
+    })
+  </script>
+</html>

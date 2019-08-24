@@ -3,12 +3,9 @@
   <head>
     <title>todomvc of JavaScript</title>
     <style>
-      #bottomBar>span {
-        display: inline-block;
-        margin-right: 32px;
-      }
-      .inputDisable {
-        border: none;
+      .todoInput {
+        outline: none;
+        border: 1px solid rgba(0, 0, 0, 0);
       }
     </style>
   </head>
@@ -19,13 +16,11 @@
     <div id="todos"></div>
     <div id="bottomBar">
       <sapn id="count">0 items left</sapn>
-      <span style="margin-right: 32px;"></span>
       <sapn>
         <label><input value="all" name="state" type="radio" onclick="filterStateChange(this.value)" />All</label>
         <label><input value="active" name="state" type="radio" onclick="filterStateChange(this.value)" />Active</label>
         <label><input value="completed" name="state" type="radio" onclick="filterStateChange(this.value)" />Completed</label>
       </sapn>
-      <span style="margin-right: 32px;"></span>
       <a href="javascript:;" onclick="clearCompleted()">Clear completed</a>
     </div>
   </body>
@@ -130,13 +125,10 @@
     // 启用input
     function inputEnabled (target) {
       target.readOnly = false;
-      target.classList.remove("inputDisable");
-    }
-    // 禁用input
-    function inputDisabled (target, id) {
-      updateTodoValue(target.value.trim(), id)
-      target.readOnly = true;
-      target.classList.add("inputDisable");
+      target.style.border = '1px solid #CCC';
+      target.style.color = '#000';
+      target.style.textDecoration = ''
+      moveEnd(target);
     }
     // 显示todo
     function showTodos () {
@@ -155,10 +147,11 @@
           completedCount++;
         }
         if (state === 'all' || state === todo.state) {
+          const inputStyle = todo.state === 'completed' ? 'style="color: #CCC; text-decoration: line-through;"' : ''
           todosHTML += '<div>';
           todosHTML += '<input type="checkbox" onclick="updateTodoState(this.checked, \'' + todo.id + '\')" ';
           todosHTML += todo.state === 'completed' ? 'checked />' : '/>';
-          todosHTML += '<input style="outline:none;" readonly class="inputDisable" onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="inputDisabled(this, \'' + todo.id + '\')" value="' + todo.value + '" />';
+          todosHTML += '<input ' + inputStyle + ' class="todoInput" readonly onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="updateTodoValue(this.value.trim(), \'' + todo.id + '\')" value="' + todo.value + '" />';
           todosHTML += '<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">删除</a>'
           todosHTML += '</div>';
         }
@@ -186,6 +179,19 @@
       if (todosJSON) {
         localStorage.setItem('todos', JSON.stringify(todosJSON));
       }
+    }
+    // 将光标移到最后
+    function moveEnd(obj){
+      obj.focus();
+      var len = obj.value.length;
+      if (document.selection) {
+        var sel = obj.createTextRange();
+        sel.moveStart('character',len);
+        sel.collapse();
+        sel.select();
+      } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
+        obj.selectionStart = obj.selectionEnd = len;
+      }
     }
     // 生成唯一id
     function guid() {
