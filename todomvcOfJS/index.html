@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>todomvc of JavaScript</title>
+    <style>
+      #bottomBar>span {
+        display: inline-block;
+        margin-right: 32px;
+      }
+      .inputDisable {
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>todos of JavaScript</h1>
+    <input id="completedAll" onclick="completedAll(this.checked)" type="checkbox" />
+    <input id="keyword" autofocus onkeypress="onInputEnter(event, this)" />
+    <div id="todos"></div>
+    <div id="bottomBar">
+      <sapn id="count">0 items left</sapn>
+      <span style="margin-right: 32px;"></span>
+      <sapn>
+        <label><input value="all" name="state" type="radio" onclick="filterStateChange(this.value)" />All</label>
+        <label><input value="active" name="state" type="radio" onclick="filterStateChange(this.value)" />Active</label>
+        <label><input value="completed" name="state" type="radio" onclick="filterStateChange(this.value)" />Completed</label>
+      </sapn>
+      <span style="margin-right: 32px;"></span>
+      <a href="javascript:;" onclick="clearCompleted()">Clear completed</a>
+    </div>
+  </body>
+  <script>
+    // 页面完成加载时恢复状态和数据
+    window.onload = function () {
+      setRadioChecked();
+      showTodos();
+    };
+    // 设置radio选中状态
+    function setRadioChecked () {
+      const state = localStorage.getItem('state') || 'all'
+      const radioEls = document.getElementsByName('state')
+      for (const radioEl of radioEls) {
+        radioEl.checked = radioEl.value === state
+      }
+    }
+    // 监听回车事件
+    function onInputEnter (event, target, id) {
+      if (event.keyCode === 13) {
+        const value = target.value.trim();
+        if (id) {
+          // 更新
+          updateTodoValue(value, id);
+          target.readOnly = true
+        } else {
+          // 新增
+          addTodo(value);
+          target.value = '';
+        }
+      }
+    }
+    // 添加todo
+    function addTodo (value) {
+      if (value) {
+        let todos = localStorage.getItem('todos');
+        todos = todos ? JSON.parse(todos) : [];
+        const todo = {
+          id: guid(),
+          state: 'active',
+          value: value
+        }
+        todos.push(todo);
+        saveTodosJSON(todos);
+        showTodos();
+      }
+    }
+    // 删除todo
+    function removeTodo (id) {
+      let todos = getTodosJSON();
+      todos = todos.filter(item => item.id !== id);
+      saveTodosJSON(todos);
+      showTodos();
+    }
+    // 删除已完成的todo
+    function clearCompleted () {
+      let todos = getTodosJSON();
+      todos = todos.filter(item => item.state !== 'completed');
+      saveTodosJSON(todos);
+      showTodos();
+    }
+    // 完成所有todo
+    function completedAll (checked) {
+      const state = checked ? 'completed' : 'active';
+      const todos = getTodosJSON();
+      for (const todo of todos) {
+        todo.state = state;
+      }
+      saveTodosJSON(todos);
+      showTodos();
+    }
+    // 更新todo状态
+    function updateTodoState (checked, id) {
+      const state = checked ? 'completed' : 'active';
+      const todos = getTodosJSON();
+      for (const todo of todos) {
+        if (todo.id === id) {
+          todo.state = state;
+          break;
+        }
+      }
+      saveTodosJSON(todos);
+      showTodos();
+    }
+    // 更新todo值
+    function updateTodoValue (value, id) {
+      const todos = getTodosJSON();
+      for (const todo of todos) {
+        if (todo.id === id) {
+          todo.value = value;
+          break;
+        }
+      }
+      saveTodosJSON(todos);
+      showTodos();
+    }
+    // 更新筛选状态
+    function filterStateChange (state) {
+      localStorage.setItem('state', state)
+      showTodos()
+    }
+    // 启用input
+    function inputEnabled (target) {
+      target.readOnly = false;
+      target.classList.remove("inputDisable");
+    }
+    // 禁用input
+    function inputDisabled (target, id) {
+      updateTodoValue(target.value.trim(), id)
+      target.readOnly = true;
+      target.classList.add("inputDisable");
+    }
+    // 显示todo
+    function showTodos () {
+      // 获取和转换本地todos数据
+      const todos = getTodosJSON();
+      const todosEl = document.getElementById('todos');
+      // 全选按钮的显隐
+      const completedAllEl = document.getElementById('completedAll');
+      completedAllEl.style.display = todos.length === 0 ? 'none' : '';
+      // 遍历和生成todo元素
+      const state = localStorage.getItem('state') || 'all'
+      let todosHTML = ""
+      let completedCount = 0
+      for (const todo of todos) {
+        if (todo.state === 'completed') {
+          completedCount++;
+        }
+        if (state === 'all' || state === todo.state) {
+          todosHTML += '<div>';
+          todosHTML += '<input type="checkbox" onclick="updateTodoState(this.checked, \'' + todo.id + '\')" ';
+          todosHTML += todo.state === 'completed' ? 'checked />' : '/>';
+          todosHTML += '<input style="outline:none;" readonly class="inputDisable" onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="inputDisabled(this, \'' + todo.id + '\')" value="' + todo.value + '" />';
+          todosHTML += '<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">删除</a>'
+          todosHTML += '</div>';
+        }
+      }
+      // 设置全选按钮状态
+      completedAllEl.checked = todos.length === completedCount;
+      // 设置未完成数量
+      const unCompletedEl = document.getElementById('count');
+      unCompletedEl.innerText = (todos.length - completedCount) + ' items left';
+      todosEl.innerHTML = todosHTML;
+    }
+
+    // ===== 工具方法 ===== //
+    // 获取转换后的todos
+    function getTodosJSON () {
+      let todos = localStorage.getItem('todos');
+      if (todos) {
+        return JSON.parse(todos);
+      } else {
+        return []
+      }
+    }
+    // 保存转换前的todos
+    function saveTodosJSON (todosJSON) {
+      if (todosJSON) {
+        localStorage.setItem('todos', JSON.stringify(todosJSON));
+      }
+    }
+    // 生成唯一id
+    function guid() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+  </script>
+</html>
