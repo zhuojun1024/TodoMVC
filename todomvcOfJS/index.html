@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>todomvc of JavaScript</title>
+    <title>TodoMVC of JavaScript</title>
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
     <style>
       .todoInput {
-        outline: none;
         border: 1px solid rgba(0, 0, 0, 0);
       }
     </style>
   </head>
   <body>
-    <h1>todomvc of JavaScript</h1>
-    <input id="completedAll" onclick="completedAll(this.checked)" type="checkbox" />
-    <input id="keyword" autofocus onkeypress="onInputEnter(event, this)" />
-    <div id="todos"></div>
-    <div id="bottomBar">
-      <span id="count">0 items left</span>
-      <span>
-        <label><input value="all" name="state" type="radio" onclick="filterStateChange(this.value)" />All</label>
-        <label><input value="active" name="state" type="radio" onclick="filterStateChange(this.value)" />Active</label>
-        <label><input value="completed" name="state" type="radio" onclick="filterStateChange(this.value)" />Completed</label>
-      </span>
-      <a href="javascript:;" onclick="clearCompleted()">Clear completed</a>
+    <div class="layout_main">
+      <h1>todos</h1>
+      <div class="layout_header">
+        <input id="completedAll" onclick="completedAll(this.checked)" type="checkbox" />
+        <input id="keyword" autofocus onkeypress="onInputEnter(event, this)" placeholder="What needs to be done?" />
+      </div>
+      <div id="todos"></div>
+      <div id="bottomBar">
+        <span id="count">0 items left</span>
+        <span id="state">
+          <span onclick="filterStateChange('all')">All</span>
+          <span onclick="filterStateChange('active')">Active</span>
+          <span onclick="filterStateChange('completed')">Completed</span>
+        </span>
+        <a id="clear" href="javascript:;" onclick="clearCompleted()">Clear completed</a>
+      </div>
     </div>
   </body>
   <script>
@@ -33,9 +37,13 @@
     // 设置radio选中状态
     function setRadioChecked () {
       const state = localStorage.getItem('state') || 'all';
-      const radioEls = document.getElementsByName('state');
+      const radioEls = document.getElementById('state').getElementsByTagName('span');
       for (const radioEl of radioEls) {
-        radioEl.checked = radioEl.value === state;
+        if (radioEl.innerText.toLowerCase() === state) {
+          radioEl.classList.add('selected');
+        } else {
+          radioEl.classList.remove('selected');
+        }
       }
     }
     // 监听回车事件
@@ -107,19 +115,24 @@
     }
     // 更新todo值
     function updateTodoValue (value, id) {
-      const todos = getTodosJSON();
-      for (const todo of todos) {
-        if (todo.id === id) {
-          todo.value = value;
-          break;
+      if (value) {
+        const todos = getTodosJSON();
+        for (const todo of todos) {
+          if (todo.id === id) {
+            todo.value = value;
+            break;
+          }
         }
+        saveTodosJSON(todos);
+        showTodos();
+      } else {
+        removeTodo(id);
       }
-      saveTodosJSON(todos);
-      showTodos();
     }
     // 更新筛选状态
     function filterStateChange (state) {
       localStorage.setItem('state', state);
+      setRadioChecked();
       showTodos();
     }
     // 启用input
@@ -148,11 +161,11 @@
         }
         if (state === 'all' || state === todo.state) {
           const inputStyle = todo.state === 'completed' ? 'style="color: #CCC; text-decoration: line-through;"' : '';
-          todosHTML += '<div>';
+          todosHTML += '<div class="todo">';
           todosHTML += '<input type="checkbox" onclick="updateTodoState(this.checked, \'' + todo.id + '\')" ';
           todosHTML += todo.state === 'completed' ? 'checked />' : '/>';
           todosHTML += '&nbsp;<input ' + inputStyle + ' class="todoInput" readonly onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="updateTodoValue(this.value.trim(), \'' + todo.id + '\')" value="' + todo.value + '" />';
-          todosHTML += '&nbsp;<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">删除</a>';
+          todosHTML += '&nbsp;<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">×</a>';
           todosHTML += '</div>';
         }
       }
@@ -164,6 +177,9 @@
       // 设置未完成数量
       const unCompletedEl = document.getElementById('count');
       unCompletedEl.innerText = (todos.length - completedCount) + ' items left';
+      // 设置清除完成事项文字状态
+      const clearCompletedEl = document.getElementById('clear');
+      clearCompletedEl.style.display = completedCount === 0 ? 'none' : '';
       todosEl.innerHTML = todosHTML;
     }
 

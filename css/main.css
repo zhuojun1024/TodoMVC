@@ -1,0 +1,104 @@
+input {
+  outline: none;
+}
+a {
+  text-decoration: none;
+}
+.layout_main {
+  width: 100%;
+  min-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.layout_header {
+  width: 600px;
+  padding: 16px 8px;
+  border: 1px solid #CCC;
+  text-align: right;
+  margin: 0 auto;
+  box-shadow: lightgray 15px 10px 20px 5px;
+}
+.layout_header * {
+  display: inline-block;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+.layout_header #completedAll {
+  margin: 0 16px;
+}
+.layout_header #keyword {
+  width: 550px;
+  font-size: 24px;
+  border: none;
+}
+#todos {
+  width: 616px;
+  text-align: left;
+  margin: 0 auto;
+  border-left: 1px solid #CCC;
+  border-right: 1px solid #CCC;
+  background-color: #FFF;
+  box-shadow: lightgray 10px 20px 20px 5px;
+}
+.todo {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 8px;
+  border-bottom: 1px solid #CCC;
+}
+.todo * {
+  display: inline-block;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+.todo:hover a {
+  display: inline;
+}
+.todo input[type='checkbox'] {
+  margin: 0 16px;
+}
+.todo .todoInput{
+  width: 500px;
+  height: 44px;
+  font-size: 20px;
+}
+.todo a {
+  display: none;
+  font-size: 24px;
+  color: red;
+}
+#bottomBar {
+  width: 584px;
+  height: 48px;
+  line-height: 48px;
+  margin: 0 auto;
+  padding: 0 16px;
+  color: #666;
+  text-align: left;
+  border: 1px solid #CCC;
+  border-top: none;
+  background-color: #FFF;
+  box-shadow: lightgray 10px 20px 20px 5px;
+}
+#bottomBar #count {
+  display: inline-block;
+}
+#bottomBar #state {
+  width: 360px;
+  text-align: center;
+  display: inline-block;
+}
+#bottomBar #state span {
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid #FFF;
+}
+#bottomBar #state .selected {
+  padding: 4px 8px;
+  border: 1px solid red;
+}
+#bottomBar a {
+  color: #666;
+  cursor: pointer;
+  display: inline-block;
+}

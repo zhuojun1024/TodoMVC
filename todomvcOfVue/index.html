@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>todomvc of Vue</title>
+    <title>TodoMVC of Vue</title>
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
     <script src="./vue.js"></script>
     <style>
       .todoInput {
-        outline: none;
         border: 1px solid rgba(0, 0, 0, 0);
       }
     </style>
   </head>
   <body>
-    <div id="app">
-      <h1>todomvc of Vue</h1>
-      <input id="completedAll" type="checkbox" @click="completedAll" v-if="todos.length > 0" :checked="checkedAll" />
-      <input id="keyword" autofocus @keyup.enter="onInputEnter" />
-      <div v-for="todo in todoList" :key="todo.id">
-        <input type="checkbox" :checked="todo.state === 'completed'" @click="e => updateTodoState(e, todo.id)" />
-        <input
-          class="todoInput"
-          readonly
-          v-model="todo.value"
-          :style="todo.state === 'completed' ? {color: '#CCC', textDecoration: 'line-through' } : {}"
-          @dblclick="inputEnabled"
-          @keyup.enter="e => onInputEnter(e, todo)"
-          @blur.prevent="e => onInputEnter(e, todo)"
-        />
-        <a href="javascript:;" @click="removeTodo(todo.id)">删除</a>
+    <div id="app" class="layout_main">
+      <h1>todos</h1>
+      <div class="layout_header">
+        <input id="completedAll" type="checkbox" @click="completedAll" v-if="todos.length > 0" :checked="checkedAll" />
+        <input id="keyword" autofocus @keyup.enter="onInputEnter" placeholder="What needs to be done?" />
+      </div>
+      <div id="todos">
+        <div v-for="todo in todoList" :key="todo.id" class="todo">
+          <input type="checkbox" :checked="todo.state === 'completed'" @click="e => updateTodoState(e, todo.id)" />
+          <input
+            class="todoInput"
+            readonly
+            v-model="todo.value"
+            :style="todo.state === 'completed' ? {color: '#CCC', textDecoration: 'line-through' } : {}"
+            @dblclick="inputEnabled"
+            @keyup.enter="e => onInputEnter(e, todo)"
+            @blur.prevent="e => onInputEnter(e, todo)"
+          />
+          <a href="javascript:;" @click="removeTodo(todo.id)">×</a>
+        </div>
       </div>
       <div id="bottomBar" v-if="todos.length > 0">
         <span id="count">{{ unCompletedCount }} items left</span>
-        <span>
-          <label><input value="all" name="state" type="radio" :checked="filterState === 'all'" @click="changeFilterState('all')" />All</label>
-          <label><input value="active" name="state" type="radio" :checked="filterState === 'active'" @click="changeFilterState('active')" />Active</label>
-          <label><input value="completed" name="state" type="radio" :checked="filterState === 'completed'" @click="changeFilterState('completed')" />Completed</label>
+        <span id="state">
+          <span :class="filterState === 'all' ? 'selected' : ''" @click="changeFilterState('all')">All</span>
+          <span :class="filterState === 'active' ? 'selected' : ''" @click="changeFilterState('active')">Active</span>
+          <span :class="filterState === 'completed' ? 'selected' : ''" @click="changeFilterState('completed')">Completed</span>
         </span>
-        <a href="javascript:;" @click="clearCompleted">Clear completed</a>
+        <a id="clear" href="javascript:;" @click="clearCompleted" v-if="todos.length !== unCompletedCount">Clear completed</a>
       </div>
     </div>
   </body>
@@ -74,13 +78,17 @@
         onInputEnter (event, todo) {
           if (todo) {
             // 更新
-            this.saveTodosJSON(this.todos);
-            // 判断状态
-            if (todo.state === 'completed') {
-              this.inputDisabled(event);
+            if (todo.value) {
+              this.saveTodosJSON(this.todos);
+              // 判断状态
+              if (todo.state === 'completed') {
+                this.inputDisabled(event);
+              } else {
+                event.target.readOnly = true;
+                event.target.style.border = '1px solid #FFF';
+              }
             } else {
-              event.target.readOnly = true;
-              event.target.style.border = '1px solid #FFF';
+              this.removeTodo(todo.id)
             }
           } else {
             // 新增
