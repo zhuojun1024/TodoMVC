@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>todomvc of JavaScript</title>
+    <title>todomvc of Vue</title>
     <script src="./vue.js"></script>
     <style>
       .todoInput {
@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id="app">
-      <h1>todos of Vue</h1>
+      <h1>todomvc of Vue</h1>
       <input id="completedAll" type="checkbox" @click="completedAll" v-if="todos.length > 0" :checked="checkedAll" />
       <input id="keyword" autofocus @keyup.enter="onInputEnter" />
       <div v-for="todo in todoList" :key="todo.id">
