@@ -3,21 +3,39 @@
   <head>
     <title>todomvc of JavaScript</title>
     <script src="./vue.js"></script>
+    <style>
+      .todoInput {
+        outline: none;
+        border: 1px solid rgba(0, 0, 0, 0);
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-      <h1>{{ title }}</h1>
-      <input id="completedAll" type="checkbox" />
-      <input id="keyword" autofocus />
-      <div id="todos"></div>
-      <div id="bottomBar">
-        <sapn id="count">0 items left</sapn>
-        <sapn>
-          <label><input value="all" name="state" type="radio" />All</label>
-          <label><input value="active" name="state" type="radio" />Active</label>
-          <label><input value="completed" name="state" type="radio" />Completed</label>
-        </sapn>
-        <a href="javascript:;">Clear completed</a>
+      <h1>todos of Vue</h1>
+      <input id="completedAll" type="checkbox" @click="completedAll" v-if="todos.length > 0" :checked="checkedAll" />
+      <input id="keyword" autofocus @keyup.enter="onInputEnter" />
+      <div v-for="todo in todoList" :key="todo.id">
+        <input type="checkbox" :checked="todo.state === 'completed'" @click="e => updateTodoState(e, todo.id)" />
+        <input
+          class="todoInput"
+          readonly
+          v-model="todo.value"
+          :style="todo.state === 'completed' ? {color: '#CCC', textDecoration: 'line-through' } : {}"
+          @dblclick="inputEnabled"
+          @keyup.enter="e => onInputEnter(e, todo)"
+          @blur.prevent="e => onInputEnter(e, todo)"
+        />
+        <a href="javascript:;" @click="removeTodo(todo.id)">删除</a>
+      </div>
+      <div id="bottomBar" v-if="todos.length > 0">
+        <span id="count">{{ unCompletedCount }} items left</span>
+        <span>
+          <label><input value="all" name="state" type="radio" :checked="filterState === 'all'" @click="changeFilterState('all')" />All</label>
+          <label><input value="active" name="state" type="radio" :checked="filterState === 'active'" @click="changeFilterState('active')" />Active</label>
+          <label><input value="completed" name="state" type="radio" :checked="filterState === 'completed'" @click="changeFilterState('completed')" />Completed</label>
+        </span>
+        <a href="javascript:;" @click="clearCompleted">Clear completed</a>
       </div>
     </div>
   </body>
@@ -26,12 +44,150 @@
       el: '#app',
       data () {
         return {
-          title: 'todos of Vue'
+          todos: [],
+          filterState: 'all'
         }
       },
-      computed: {},
-      mounted () {},
-      methods: {}
+      computed: {
+        // 根据状态筛选的todo列表数据
+        todoList () {
+          return this.todos.filter(item => {
+            return this.filterState === 'all' || item.state === this.filterState;
+          })
+        },
+        // 判断全部completed的状态
+        checkedAll () {
+          return (this.todos.filter(item => item.state === 'completed') || []).length === this.todos.length;
+        },
+        // 计算未completed的数量
+        unCompletedCount () {
+          return (this.todos.filter(item => item.state === 'active') || []).length;
+        }
+      },
+      mounted () {
+        // 初始化筛选状态
+        this.filterState = localStorage.getItem('state') || 'all'
+        this.todos = this.getTodosJSON();
+      },
+      methods: {
+        // 输入框回车事件
+        onInputEnter (event, todo) {
+          if (todo) {
+            // 更新
+            this.saveTodosJSON(this.todos);
+            // 判断状态
+            if (todo.state === 'completed') {
+              this.inputDisabled(event);
+            } else {
+              event.target.readOnly = true;
+              event.target.style.border = '1px solid #FFF';
+            }
+          } else {
+            // 新增
+            const value = event.target.value.trim();
+            this.addTodo(value);
+            event.target.value = '';
+          }
+        },
+        // 添加todo
+        addTodo (value) {
+          if (value) {
+            const todo = {
+              id: this.guid(),
+              state: 'active',
+              value: value
+            };
+            this.todos.push(todo);
+            this.saveTodosJSON(this.todos);
+          }
+        },
+        // 删除todo
+        removeTodo (id) {
+          this.todos = this.todos.filter(item => item.id !== id);
+          this.saveTodosJSON(this.todos);
+        },
+        // 完成所有todo
+        completedAll (event) {
+          const state = event.target.checked ? 'completed' : 'active';
+          for (const todo of this.todos) {
+            todo.state = state;
+          }
+          this.saveTodosJSON(this.todos);
+        },
+        // 更新todo状态
+        updateTodoState (event, id) {
+          const state = event.target.checked ? 'completed' : 'active';
+          for (const todo of this.todos) {
+            if (todo.id === id) {
+              todo.state = state;
+              break;
+            }
+          }
+          this.saveTodosJSON(this.todos);
+        },
+        // 清除已完成todo
+        clearCompleted () {
+          this.todos = this.todos.filter(item => item.state !== 'completed');
+          this.saveTodosJSON(this.todos);
+        },
+        // 更新筛选状态
+        changeFilterState (filterState) {
+          this.filterState = filterState;
+          localStorage.setItem('state', this.filterState);
+        },
+        // 启用input
+        inputEnabled (event) {
+          event.target.readOnly = false;
+          event.target.style.border = '1px solid #CCC';
+          event.target.style.color = '#000';
+          event.target.style.textDecoration = '';
+          this.moveEnd(event.target);
+        },
+        // 禁用input
+        inputDisabled (event) {
+          event.target.readOnly = true;
+          event.target.style.border = '1px solid #FFF';
+          event.target.style.color = '#CCC';
+          event.target.style.textDecoration = 'line-through';
+        },
+        // ===== 工具方法 ===== //
+        // 获取转换后的todos
+         getTodosJSON () {
+          let todos = localStorage.getItem('todos');
+          if (todos) {
+            return JSON.parse(todos);
+          } else {
+            return [];
+          }
+        },
+        // 保存转换前的todos
+        saveTodosJSON (todosJSON) {
+          if (todosJSON) {
+            localStorage.setItem('todos', JSON.stringify(todosJSON));
+          }
+        },
+        // 将光标移到最后
+        moveEnd(obj){
+          obj.focus();
+          var len = obj.value.length;
+          if (document.selection) {
+            var sel = obj.createTextRange();
+            sel.moveStart('character',len);
+            sel.collapse();
+            sel.select();
+          } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
+            obj.selectionStart = obj.selectionEnd = len;
+          }
+        },
+        // 生成唯一id
+        guid() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+        }
+      }
     })
   </script>
 </html>

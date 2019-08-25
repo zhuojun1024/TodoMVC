@@ -15,12 +15,12 @@
     <input id="keyword" autofocus onkeypress="onInputEnter(event, this)" />
     <div id="todos"></div>
     <div id="bottomBar">
-      <sapn id="count">0 items left</sapn>
-      <sapn>
+      <span id="count">0 items left</span>
+      <span>
         <label><input value="all" name="state" type="radio" onclick="filterStateChange(this.value)" />All</label>
         <label><input value="active" name="state" type="radio" onclick="filterStateChange(this.value)" />Active</label>
         <label><input value="completed" name="state" type="radio" onclick="filterStateChange(this.value)" />Completed</label>
-      </sapn>
+      </span>
       <a href="javascript:;" onclick="clearCompleted()">Clear completed</a>
     </div>
   </body>
@@ -32,10 +32,10 @@
     };
     // 设置radio选中状态
     function setRadioChecked () {
-      const state = localStorage.getItem('state') || 'all'
-      const radioEls = document.getElementsByName('state')
+      const state = localStorage.getItem('state') || 'all';
+      const radioEls = document.getElementsByName('state');
       for (const radioEl of radioEls) {
-        radioEl.checked = radioEl.value === state
+        radioEl.checked = radioEl.value === state;
       }
     }
     // 监听回车事件
@@ -45,7 +45,7 @@
         if (id) {
           // 更新
           updateTodoValue(value, id);
-          target.readOnly = true
+          target.readOnly = true;
         } else {
           // 新增
           addTodo(value);
@@ -119,15 +119,15 @@
     }
     // 更新筛选状态
     function filterStateChange (state) {
-      localStorage.setItem('state', state)
-      showTodos()
+      localStorage.setItem('state', state);
+      showTodos();
     }
     // 启用input
     function inputEnabled (target) {
       target.readOnly = false;
       target.style.border = '1px solid #CCC';
       target.style.color = '#000';
-      target.style.textDecoration = ''
+      target.style.textDecoration = '';
       moveEnd(target);
     }
     // 显示todo
@@ -139,25 +139,28 @@
       const completedAllEl = document.getElementById('completedAll');
       completedAllEl.style.display = todos.length === 0 ? 'none' : '';
       // 遍历和生成todo元素
-      const state = localStorage.getItem('state') || 'all'
-      let todosHTML = ""
-      let completedCount = 0
+      const state = localStorage.getItem('state') || 'all';
+      let todosHTML = "";
+      let completedCount = 0;
       for (const todo of todos) {
         if (todo.state === 'completed') {
           completedCount++;
         }
         if (state === 'all' || state === todo.state) {
-          const inputStyle = todo.state === 'completed' ? 'style="color: #CCC; text-decoration: line-through;"' : ''
+          const inputStyle = todo.state === 'completed' ? 'style="color: #CCC; text-decoration: line-through;"' : '';
           todosHTML += '<div>';
           todosHTML += '<input type="checkbox" onclick="updateTodoState(this.checked, \'' + todo.id + '\')" ';
           todosHTML += todo.state === 'completed' ? 'checked />' : '/>';
-          todosHTML += '<input ' + inputStyle + ' class="todoInput" readonly onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="updateTodoValue(this.value.trim(), \'' + todo.id + '\')" value="' + todo.value + '" />';
-          todosHTML += '<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">删除</a>'
+          todosHTML += '&nbsp;<input ' + inputStyle + ' class="todoInput" readonly onkeypress="onInputEnter(event, this, \'' + todo.id + '\' )" ondblclick="inputEnabled(this)" onblur="updateTodoValue(this.value.trim(), \'' + todo.id + '\')" value="' + todo.value + '" />';
+          todosHTML += '&nbsp;<a href="javascript:;" onclick="removeTodo(\'' + todo.id + '\')">删除</a>';
           todosHTML += '</div>';
         }
       }
       // 设置全选按钮状态
       completedAllEl.checked = todos.length === completedCount;
+      // 设置底部工具条
+      const bottomBarEl = document.getElementById('bottomBar');
+      bottomBarEl.style.display = todos.length === 0 ? 'none' : '';
       // 设置未完成数量
       const unCompletedEl = document.getElementById('count');
       unCompletedEl.innerText = (todos.length - completedCount) + ' items left';
@@ -171,7 +174,7 @@
       if (todos) {
         return JSON.parse(todos);
       } else {
-        return []
+        return [];
       }
     }
     // 保存转换前的todos
