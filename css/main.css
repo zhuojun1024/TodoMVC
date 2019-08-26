@@ -16,7 +16,7 @@ a {
   border: 1px solid #CCC;
   text-align: right;
   margin: 0 auto;
-  box-shadow: lightgray 15px 10px 20px 5px;
+  /* box-shadow: lightgray 15px 10px 20px 5px; */
 }
 .layout_header * {
   display: inline-block;
@@ -38,7 +38,7 @@ a {
   border-left: 1px solid #CCC;
   border-right: 1px solid #CCC;
   background-color: #FFF;
-  box-shadow: lightgray 10px 20px 20px 5px;
+  /* box-shadow: lightgray 10px 20px 20px 5px; */
 }
 .todo {
   height: 48px;
@@ -78,7 +78,7 @@ a {
   border: 1px solid #CCC;
   border-top: none;
   background-color: #FFF;
-  box-shadow: lightgray 10px 20px 20px 5px;
+  /* box-shadow: lightgray 10px 20px 20px 5px; */
 }
 #bottomBar #count {
   display: inline-block;
